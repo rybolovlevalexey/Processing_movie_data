@@ -6,8 +6,8 @@ namespace Обработка_данных_о_фильмах
 {
     class Tag
     {
-        string id;
-        string text;
+        public string id;
+        public string text;
 
         public Tag(string id, string text)
         {
