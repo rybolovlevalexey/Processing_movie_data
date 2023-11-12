@@ -1,25 +1,34 @@
-п»їusing System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System.Diagnostics;
 
 
-namespace РћР±СЂР°Р±РѕС‚РєР°_РґР°РЅРЅС‹С…_Рѕ_С„РёР»СЊРјР°С…
+namespace Обработка_данных_о_фильмах
 {
     class Program
     {
-        static Dictionary<string, Movie> films = new Dictionary<string, Movie>();  // РЅР°Р·РІР°РЅРёРµ: С„РёР»СЊРј
-        static Dictionary<string, List<Movie>> people = new Dictionary<string, List<Movie>>();  // РёРјСЏ СѓС‡Р°С‚СЃРЅРёРєР°: С„РёР»СЊРјС‹
-        static Dictionary<string, List<Movie>> tags_dict = new Dictionary<string, List<Movie>>();  // С‚СЌРі: С„РёР»СЊРјС‹
-        static string dataset_path = @"C:\РЈРЅРёРІРµСЂ\ml-latest\";
+
+        static Dictionary<string, Movie> films = new Dictionary<string, Movie>();  // название: фильм
+        static Dictionary<string, List<Movie>> people = new Dictionary<string, List<Movie>>();  // имя учатсника: фильмы
+        static Dictionary<string, List<Movie>> tags_dict = new Dictionary<string, List<Movie>>();  // тэг: фильмы
+        static string dataset_path = @"C:\Универ\ml-latest\";
 
         static Dictionary<string, Person> persons_for_async = new Dictionary<string, Person>();
         static Dictionary<string, List<string>> tags_async_result = new Dictionary<string, List<string>>();
 
         static void Main(string[] args)
         {
-            Dictionary<string, List<string>> id_name = new Dictionary<string, List<string>>();  // id С„РёР»СЊРјР°: РЅР°Р·РІР°РЅРёРµ С„РёР»СЊРјР°
-            // РЅР°РїРѕР»РЅРµРЅРёРµ СЃР»РѕРІР°СЂРµР№ films Рё id_name
+            //Console.WriteLine("Обработка данных о фильмах");
+            //Process process = new Process();
+            //process.StartInfo.FileName = "cmd.exe";
+            //process.StartInfo.Arguments = "/c chcp 65001 && dir";
+            //process.Start();
+            //process.WaitForExit();
+            Console.WriteLine("Processing of movie data");
+            Dictionary<string, List<string>> id_name = new Dictionary<string, List<string>>();  // id фильма: название фильма
+            // наполнение словарей films и id_name
             using (StreamReader reader = new StreamReader(dataset_path + "MovieCodes_IMDB.tsv"))
             {
                 reader.ReadLine();
@@ -46,7 +55,7 @@ namespace РћР±СЂР°Р±РѕС‚РєР°_РґР°РЅРЅС‹С…_Рѕ_С„РёР»СЊРјР°С…
             Console.WriteLine("The initial review of the films is done.");
 
 
-            // РґРѕР±Р°РІР»РµРЅРёРµ СЂРµР№С‚РёРЅРіР° РІРѕ РІСЃРµ С„РёР»СЊРјС‹
+            // добавление рейтинга во все фильмы
             using (StreamReader reader = new StreamReader(dataset_path + "Ratings_IMDB.tsv"))
             {
                 reader.ReadLine();
@@ -72,7 +81,7 @@ namespace РћР±СЂР°Р±РѕС‚РєР°_РґР°РЅРЅС‹С…_Рѕ_С„РёР»СЊРјР°С…
             }
             Console.WriteLine("Make tags done.");
 
-            // РЅР°РїРѕР»РЅРµРЅРёРµ С„РёР»СЊРјРѕРІ РёС… Р°РєС‚С‘СЂР°РјРё Рё СЂРµР¶РёСЃСЃС‘СЂР°РјРё
+            // наполнение фильмов их актёрами и режиссёрами
             Dictionary<string, Person> result_people = make_people(id_name);
             foreach (var per in result_people.Values)
             {
@@ -93,8 +102,8 @@ namespace РћР±СЂР°Р±РѕС‚РєР°_РґР°РЅРЅС‹С…_Рѕ_С„РёР»СЊРјР°С…
             }
             Console.WriteLine("Make people done");
 
-            // С„РёРЅР°Р»СЊРЅС‹Рµ РїСЂРёРіРѕС‚РѕРІР»РµРЅРёСЏ
-            // РЅР°РїРѕР»РЅРµРЅРёРµ РІС‚РѕСЂРѕРіРѕ СЃР»РѕРІР°СЂСЏ
+            // финальные приготовления
+            // наполнение второго словаря
             foreach (var per in result_people.Values)
             {
                 people[per.name] = new List<Movie>();
@@ -108,7 +117,7 @@ namespace РћР±СЂР°Р±РѕС‚РєР°_РґР°РЅРЅС‹С…_Рѕ_С„РёР»СЊРјР°С…
             }
             Console.WriteLine("Dictionary with persons is ready.");
 
-            // РЅР°РїРѕР»РЅРµРЅРёРµ С‚СЂРµС‚СЊРµРіРѕ СЃР»РѕРІР°СЂСЏ, РєРѕРіРґР° РІСЃРµ РєР»Р°СЃСЃС‹ С„РёР»СЊРјРѕРІ Р·Р°РїРѕР»РЅРµРЅС‹
+            // наполнение третьего словаря, когда все классы фильмов заполнены
             foreach (var film_name in result_tags.Keys.AsParallel())
             {
                 foreach (var tag in result_tags[film_name])
@@ -123,33 +132,33 @@ namespace РћР±СЂР°Р±РѕС‚РєР°_РґР°РЅРЅС‹С…_Рѕ_С„РёР»СЊРјР°С…
 
             while (true)
             {
-                Console.WriteLine("a - С„РёР»СЊРјС‹, b - Р»СЋРґРё, c - С‚СЌРіРё");
+                Console.WriteLine("a - фильмы, b - люди, c - тэги");
                 string mode = Console.ReadLine();
                 switch (mode)
                 {
                     case "a":
                         string movie_name = Console.ReadLine();
                         if (!films.ContainsKey(movie_name))
-                            Console.WriteLine("РЈРєР°Р·Р°РЅРЅС‹Р№ С„РёР»СЊРј РЅРµ РЅР°Р№РґРµРЅ");
+                            Console.WriteLine("Указанный фильм не найден");
                         else
                         {
                             var result = films[movie_name];
-                            Console.WriteLine($"Р¤РёР»СЊРј {result.name} СЃ СЂРµР№С‚РёРЅРіРѕРј {result.rating}");
-                            Console.WriteLine($"СЂР°СЃРїРѕР»Р°РіР°РµС‚ СЃР»РµРґСѓСЋС‰РёРјРё С‚СЌРіР°РјРё: {print_iter(result.tags)}");
-                            Console.WriteLine($"Рё Р°РєС‚С‘СЂР°РјРё: {print_iter(result.actors)}");
-                            Console.WriteLine($"СЂРµР¶РёСЃСЃС‘СЂС‹ - {print_iter(result.directors)}");
+                            Console.WriteLine($"Фильм {result.name} с рейтингом {result.rating}");
+                            Console.WriteLine($"располагает следующими тэгами: {print_iter(result.tags)}");
+                            Console.WriteLine($"и актёрами: {print_iter(result.actors)}");
+                            Console.WriteLine($"режиссёры - {print_iter(result.directors)}");
                         }
                         break;
                     case "b":
                         string person_name = Console.ReadLine();
                         if (!people.ContainsKey(person_name))
                         {
-                            Console.WriteLine("РЈРєР°Р·Р°РЅРЅС‹Р№ С‡РµР»РѕРІРµРє РЅРµ РЅР°Р№РґРµРЅ");
+                            Console.WriteLine("Указанный человек не найден");
                         }
                         else
                         {
                             int num = 1;
-                            Console.WriteLine($"Р§РµР»РѕРІРµРє СЃ РёРјРµРЅРµРј {person_name} СѓС‡Р°СЃС‚РІРѕРІР°Р» РІ СЃР»РµРґСѓСЋС‰РёС… РїСЂРѕРµРєС‚Р°С…:");
+                            Console.WriteLine($"Человек с именем {person_name} участвовал в следующих проектах:");
                             foreach (var cur_film in people[person_name])
                             {
                                 Console.Write($"{num}) {cur_film.name}  ");
@@ -162,11 +171,11 @@ namespace РћР±СЂР°Р±РѕС‚РєР°_РґР°РЅРЅС‹С…_Рѕ_С„РёР»СЊРјР°С…
                         string tag_name = Console.ReadLine();
                         if (!tags_dict.ContainsKey(tag_name))
                         {
-                            Console.WriteLine("РЈРєР°Р·Р°РЅРЅС‹Р№ С‚СЌРі РЅРµ РЅР°Р№РґРµРЅ");
+                            Console.WriteLine("Указанный тэг не найден");
                         }
                         else
                         {
-                            Console.WriteLine($"РўСЌРі {tag_name} РїСЂРёСЃСѓС‚СЃС‚РІСѓРµС‚ РІ СЃР»РµРґСѓСЋС‰РёС… С„РёР»СЊРјР°С…:");
+                            Console.WriteLine($"Тэг {tag_name} присутствует в следующих фильмах:");
                             int num = 1;
                             foreach (var cur_film in tags_dict[tag_name])
                             {
