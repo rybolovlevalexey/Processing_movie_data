@@ -15,9 +15,6 @@ namespace Обработка_данных_о_фильмах
         static Dictionary<string, List<Movie>> tags_dict = new Dictionary<string, List<Movie>>();  // тэг: фильмы
         static string dataset_path = @"C:\Универ\ml-latest\";
 
-        static Dictionary<string, Person> persons_for_async = new Dictionary<string, Person>();
-        static Dictionary<string, List<string>> tags_async_result = new Dictionary<string, List<string>>();
-
         static void Main(string[] args)
         {
             //Console.WriteLine("Обработка данных о фильмах");
@@ -26,6 +23,10 @@ namespace Обработка_данных_о_фильмах
             //process.StartInfo.Arguments = "/c chcp 65001 && dir";
             //process.Start();
             //process.WaitForExit();
+
+            NewTestMain();
+
+
             Console.WriteLine("Processing of movie data");
             Dictionary<string, List<string>> id_name = new Dictionary<string, List<string>>();  // id фильма: название фильма
             // наполнение словарей films и id_name
@@ -189,6 +190,30 @@ namespace Обработка_данных_о_фильмах
             }
         }
 
+        static void NewTestMain()
+        {
+            using (UserContext db = new UserContext())
+            {
+                // создаем два объекта User
+                User user1 = new User { Name = "Tom", Age = 33 };
+                User user2 = new User { Name = "Sam", Age = 26 };
+
+                // добавляем их в бд
+                db.Users.Add(user1);
+                db.Users.Add(user2);
+                db.SaveChanges();
+                Console.WriteLine("Objects saved correctly");
+
+                // получаем объекты из бд и выводим на консоль
+                var users = db.Users;
+                Console.WriteLine("Objects list:");
+                foreach (User u in users)
+                {
+                    Console.WriteLine("{0}.{1} - {2}", u.Id, u.Name, u.Age);
+                }
+            }
+            Console.WriteLine("NewTestMain finished succefull");
+        }
         static string print_iter(IEnumerable<string> iterable)
         {
             int i = 0;
